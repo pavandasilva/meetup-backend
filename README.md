@@ -45,3 +45,12 @@ Esse desafio **não precisa ser entregue** e não receberá correção, mas voc�
 Após concluir o desafio, adicionar esse código ao seu Github é uma boa forma de demonstrar seus conhecimentos para oportunidades futuras.
 
 “Não espere para plantar, apenas tenha paciência para colher”!
+
+### SEQUELIZE
+
+$ sequelize db:migrate        # Run pending migrations.
+$ sequelize db:migrate:undo # Revert the last migration run.
+$ sequelize help              # Display this help text.
+$ sequelize init # Initializes the project.
+$ sequelize migration:create  # Generates a new migration file.
+$ sequelize version # Prints the version number.
