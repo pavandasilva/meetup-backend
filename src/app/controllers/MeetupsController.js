@@ -55,7 +55,7 @@ class MeetupController {
     }
 
     if (isBefore(meetup.date, new Date())) {
-      return res.status(400).json({ error: 'Can not change past event' });
+      return res.status(400).json({ error: 'Can not change past meetup' });
     }
 
     if (meetup.user_id !== req.id) {
@@ -67,6 +67,25 @@ class MeetupController {
     const meetupUpdated = await meetup.update(req.body);
 
     return res.json(meetupUpdated);
+  }
+
+  async delete(req, res) {
+    const { meetupId } = req.params;
+    const meetup = await Meetup.findByPk(meetupId);
+
+    if (isBefore(meetup.date, new Date())) {
+      return res.status(400).json({ error: 'Can not change past meetup' });
+    }
+
+    if (meetup.user_id !== req.id) {
+      return res
+        .status(401)
+        .json({ error: 'No permission to change this meetup' });
+    }
+
+    await meetup.destroy();
+
+    return res.status(204).json({});
   }
 }
 
