@@ -1,8 +1,35 @@
 import * as Yup from 'yup';
+import { Op } from 'sequelize';
 import Meetup from '../models/Meetup';
-import { isBefore } from 'date-fns';
+import User from '../models/User';
+import { isBefore, startOfDay, endOfDay } from 'date-fns';
 
 class MeetupController {
+  async index(req, res) {
+    const { page = 1, date } = req.query;
+    let where = {};
+
+    where.date = {
+      [Op.between]: [startOfDay(date), endOfDay(date)],
+    };
+
+    const meetups = await Meetup.findAll({
+      where,
+      include: [
+        {
+          model: User,
+          required: true,
+          as: 'user',
+        },
+      ],
+      order: ['date'],
+      limit: 10,
+      offset: (page - 1) * 10,
+    });
+
+    return res.json(meetups);
+  }
+
   async store(req, res) {
     const { date } = req.body;
     const user_id = req.id;
@@ -42,7 +69,7 @@ class MeetupController {
     }
 
     if (isBefore(meetup.date, new Date())) {
-      return res.status(400).json({ error: 'Can not change past event' });
+      return res.status(400).json({ error: 'Can not change past meetup' });
     }
 
     if (meetup.user_id !== req.id) {
@@ -54,6 +81,25 @@ class MeetupController {
     const meetupUpdated = await meetup.update(req.body);
 
     return res.json(meetupUpdated);
+  }
+
+  async delete(req, res) {
+    const { meetupId } = req.params;
+    const meetup = await Meetup.findByPk(meetupId);
+
+    if (isBefore(meetup.date, new Date())) {
+      return res.status(400).json({ error: 'Can not change past meetup' });
+    }
+
+    if (meetup.user_id !== req.id) {
+      return res
+        .status(401)
+        .json({ error: 'No permission to change this meetup' });
+    }
+
+    await meetup.destroy();
+
+    return res.status(204).json({});
   }
 }
 
