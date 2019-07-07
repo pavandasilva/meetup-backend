@@ -3,6 +3,19 @@ import Meetup from '../models/Meetup';
 import { isBefore } from 'date-fns';
 
 class MeetupController {
+  async index(req, res) {
+    const { page = 1 } = req.query;
+
+    const meetups = await Meetup.findAll({
+      where: { user_id: req.id },
+      order: ['date'],
+      limit: 20,
+      offset: (page - 1) * 20,
+    });
+
+    return res.json(meetups);
+  }
+
   async store(req, res) {
     const { date } = req.body;
     const user_id = req.id;
